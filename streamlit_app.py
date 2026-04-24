@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+import matplotlib.pyplot as plt
 
 # Page config
 st.set_page_config(page_title="Stock Risk Intelligence", layout="wide")
@@ -32,58 +33,73 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---- HEADER ----
-st.markdown('<div class="title">Stock Risk Intelligence</div>', unsafe_allow_html=True)
+st.markdown('<div class="title">📊 Stock Risk Intelligence</div>', unsafe_allow_html=True)
 st.write("Get real-time insights on market risk and investment decisions.")
 
 # ---- BUTTON ----
-if st.button("Run Analysis"):
+if st.button("🚀 Run Analysis"):
     url = "https://stock-risk-system-611966324618.us-central1.run.app"
-    response = requests.get(url)
-    data = response.json()
+    data = requests.get(url).json()
 
     decision = data["decision"]
     probability = data["probability"] * 100
     volatility = data["volatility"] * 100
 
-    # ---- METRICS ROW ----
+    # ---- METRICS ----
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        color = "orange" if decision == "HOLD" else "green" if decision == "BUY" else "red"
-        st.markdown(f"<div class='metric' style='color:{color}'>{decision}</div>", unsafe_allow_html=True)
-        st.markdown("<div class='subtext'>Decision</div>", unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown(f"### Decision: {decision}")
 
     with col2:
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.markdown(f"<div class='metric'>{probability:.2f}%</div>", unsafe_allow_html=True)
-        st.markdown("<div class='subtext'>Model Confidence</div>", unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown(f"### Confidence: {probability:.2f}%")
 
     with col3:
-        st.markdown('<div class="card">', unsafe_allow_html=True)
-        st.markdown(f"<div class='metric'>{volatility:.2f}%</div>", unsafe_allow_html=True)
-        st.markdown("<div class='subtext'>Market Volatility</div>", unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown(f"### Volatility: {volatility:.2f}%")
 
     st.markdown("---")
 
-    # ---- EXPLANATION ----
-    st.markdown("### Risk Decision Overview")
+    # =========================
+    # 📊 BAR CHART
+    # =========================
+    st.subheader("📊 Metrics Overview")
 
-    if decision == "BUY":
-        st.success("The model suggests a BUY. Market conditions look favorable.")
-    elif decision == "SELL":
-        st.error("The model suggests a SELL. Risk is high.")
-    else:
-        st.warning("The model suggests HOLD. Market is neutral, wait for better signals.")
+    labels = ["Confidence", "Volatility"]
+    values = [probability, volatility]
+
+    fig1, ax1 = plt.subplots()
+    ax1.bar(labels, values)
+    ax1.set_ylabel("Percentage")
+    ax1.set_title("Model Metrics")
+
+    st.pyplot(fig1)
+
+    # =========================
+    # 🎯 GAUGE CHART (SIMULATED)
+    # =========================
+    st.subheader("🎯 Confidence Gauge")
+
+    fig2, ax2 = plt.subplots()
+
+    # Draw semicircle
+    ax2.pie(
+        [probability, 100 - probability],
+        startangle=180,
+        counterclock=False,
+        wedgeprops={'width': 0.3}
+    )
+
+    ax2.text(0, 0, f"{probability:.1f}%", ha='center', va='center', fontsize=18)
+    ax2.set_aspect('equal')
+
+    st.pyplot(fig2)
 
     # ---- INSIGHTS ----
-    st.markdown("### Key Insights")
+    st.markdown("### 🔍 Insights")
 
-    st.write(f"• **Confidence:** {probability:.2f}% → Moderate certainty")
-    st.write(f"• **Volatility:** {volatility:.2f}% → Market stability indicator")
-    st.write(f"• **Decision:** {decision} → Recommended action")
-
-    st.info("This is not financial advice. Do your own research before investing.")
+    if decision == "BUY":
+        st.success("Market looks good → Consider Buying")
+    elif decision == "SELL":
+        st.error("High risk → Consider Selling")
+    else:
+        st.warning("Market neutral → Hold position")
